@@ -1,13 +1,66 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>LoginPage</ion-title>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>TrackSmart</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">LoginPage</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="login-content">
+
+  <div class="login-container">
+
+    
+    <div class="logo-section">
+      <img src="assets/images/ExpenseTrackingAppLogo.jpeg" alt="App Logo">
+      <h1>TrackSmart</h1>
+      <p>Manage your expenses easily</p>
+    </div>
+
+  
+    <div class="login-card">
+
+      <h2>Welcome </h2>
+
+      <!-- Email -->
+      <ion-item class="input-item" lines="none">
+        <ion-icon name="mail" slot="start"></ion-icon>
+        <ion-input
+          type="email"
+          placeholder="Email"
+          [(ngModel)]="newUser.email">
+        </ion-input>
+      </ion-item>
+
+      <!-- Password -->
+      <ion-item class="input-item" lines="none">
+        <ion-icon name="lock-closed" slot="start"></ion-icon>
+        <ion-input
+          placeholder="Password"
+          [(ngModel)]="newUser.password">
+        </ion-input>
+
+        <ion-icon
+          name="eye"
+          slot="end"
+          class="eye-icon">
+        </ion-icon>
+      </ion-item>
+
+      <!-- Login Button -->
+      <ion-button expand="block" class="login-btn" (click)="login()">
+        Login
+      </ion-button>
+
+      <p class="register-text">Don't have an account?</p>
+
+      <!-- Register -->
+       <ion-button expand="block" fill="outline" (click)="goToRegister()">
+  Register
+</ion-button>
+      
+      
+
+    </div>
+
+  </div>
+
 </ion-content>

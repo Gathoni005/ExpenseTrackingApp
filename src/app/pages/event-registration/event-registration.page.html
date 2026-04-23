@@ -10,4 +10,22 @@
       <ion-title size="large">EventRegistration</ion-title>
     </ion-toolbar>
   </ion-header>
+  <ion-list>
+    <ion-item>
+      <ion-label position="floating">cost</ion-label>
+      <ion-input type="number" [(ngModel)]="newEvent.cost"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">category</ion-label>
+      <ion-input type="text" [(ngModel)]="newEvent.category"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">description</ion-label>
+      <ion-input type="text" [(ngModel)]="newEvent.description"></ion-input>
+    </ion-item>
+  </ion-list>
+
+  <ion-button expand="block" (click)="submitEvent()">Register Event</ion-button>
 </ion-content>

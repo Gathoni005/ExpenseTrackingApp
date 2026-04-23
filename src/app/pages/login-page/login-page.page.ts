@@ -1,20 +1,50 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { Router } from '@angular/router';
+import {  IonContent, IonHeader, IonTitle, IonToolbar, IonItem, IonInput, IonButton, IonIcon, } from '@ionic/angular/standalone';
+import { User } from '../../interfaces/event';
+import { addIcons } from 'ionicons';
+import { mail, lockClosed, eye, eyeOff } from 'ionicons/icons';
+
+addIcons({ mail, lockClosed, eye, eyeOff });
 
 @Component({
   selector: 'app-login-page',
   templateUrl: './login-page.page.html',
   styleUrls: ['./login-page.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule]
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar,IonItem, IonInput, IonButton, IonIcon,CommonModule, FormsModule
+  ]
 })
 export class LoginPage implements OnInit {
+newUser: User = {
+    email: 'ruthgg@gmail.com',
+    password: '12345678'
+  };
 
-  constructor() { }
+ constructor(private router: Router) {}
 
-  ngOnInit() {
+  ngOnInit() {}
+
+
+  login() {
+    if (!this.newUser.email || !this.newUser.password) {
+      console.log('Please fill all fields');
+      return;
+    }
+
+    console.log('Logging in user:', this.newUser);
+
+    // reset form
+    this.newUser = {
+      email: '',
+      password: ''
+    };
+    this.router.navigate(['/event-registration']);
   }
 
+  goToRegister() {
+    this.router.navigate(['/registration']);
+  }
 }

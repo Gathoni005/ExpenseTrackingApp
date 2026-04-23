@@ -1,13 +1,27 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>EventList</ion-title>
+    <ion-title>Event List</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content>
+
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">EventList</ion-title>
+      <ion-title>Event List</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  <ion-list>
+
+    <ion-item *ngFor="let event of events">
+      <ion-label>
+        <h2>{{ event.category }} - KES {{ event.cost }}</h2>
+        <p>{{ event.description }}</p>
+        <p>{{ event.date | date }}</p>
+      </ion-label>
+    </ion-item>
+
+  </ion-list>
+
 </ion-content>
