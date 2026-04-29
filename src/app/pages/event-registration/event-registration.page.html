@@ -13,17 +13,33 @@
   <ion-list>
     <ion-item>
       <ion-label position="floating">cost</ion-label>
-      <ion-input type="number" [(ngModel)]="newEvent.cost"></ion-input>
+      <ion-input type="number" min="0" [(ngModel)]="newEvent.cost"></ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-label position="floating">category</ion-label>
-      <ion-input type="text" [(ngModel)]="newEvent.category"></ion-input>
+      <ion-label>category</ion-label>
+      <ion-select slot= "end" interface="popover" [(ngModel)]="newEvent.category">
+        <ion-select-option value="Food">Food</ion-select-option>
+        <ion-select-option value="Transport">Transport</ion-select-option>
+        <ion-select-option value="Entertainment">Entertainment</ion-select-option>
+        <ion-select-option value="Utilities">Utilities</ion-select-option>
+        <ion-select-option value="Other">Other</ion-select-option>
+      </ion-select>
     </ion-item>
 
     <ion-item>
       <ion-label position="floating">description</ion-label>
       <ion-input type="text" [(ngModel)]="newEvent.description"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Service Provider</ion-label>
+      <ion-input type="text" [(ngModel)]="newEvent.serviceProvider"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Service Provider Details</ion-label>
+      <ion-input type="text" [(ngModel)]="newEvent.serviceProviderDetails"></ion-input>
     </ion-item>
   </ion-list>
 

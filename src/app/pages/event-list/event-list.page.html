@@ -16,10 +16,15 @@
 
     <ion-item *ngFor="let event of events">
       <ion-label>
-        <h2>{{ event.category }} - KES {{ event.cost }}</h2>
+        <h2>{{ event.category }}</h2>
         <p>{{ event.description }}</p>
+        <p>{{ event.serviceProvider }}</p>
+        <p>{{ event.serviceProviderDetails }}</p>
         <p>{{ event.date | date }}</p>
+        <p><strong>Cost: </strong>{{ event.cost | currency:'KES' }}</p>
       </ion-label>
+      <ion-button color="primary" slot="end" (click)="updateEvent(event.id!, event)">Edit</ion-button>
+      <ion-button color="danger" slot="end" (click)="deleteEvent(event.id!)">Delete</ion-button>
     </ion-item>
 
   </ion-list>

@@ -19,30 +19,22 @@
     <div class="login-card">
 
       <h2>Welcome </h2>
+     
 
       <!-- Email -->
-      <ion-item class="input-item" lines="none">
+      <ion-item class="input-item">
         <ion-icon name="mail" slot="start"></ion-icon>
-        <ion-input
-          type="email"
-          placeholder="Email"
-          [(ngModel)]="newUser.email">
-        </ion-input>
+        <ion-label position="floating">Email</ion-label>
+        <ion-input type="email" placeholder="Email" [(ngModel)]="newUser.email" #email="ngModel" required email></ion-input>
       </ion-item>
 
-      <!-- Password -->
-      <ion-item class="input-item" lines="none">
-        <ion-icon name="lock-closed" slot="start"></ion-icon>
-        <ion-input
-          placeholder="Password"
-          [(ngModel)]="newUser.password">
-        </ion-input>
 
-        <ion-icon
-          name="eye"
-          slot="end"
-          class="eye-icon">
-        </ion-icon>
+      <!-- Password -->
+      <ion-item class="input-item">
+        <ion-icon name="lock-closed" slot="start"></ion-icon>
+        <ion-label position="floating">Password</ion-label>
+        <ion-input #passwordInput type="password" placeholder="Password" [(ngModel)]="newUser.password"></ion-input>
+        <ion-icon name="eye" slot="end" class="eye-icon" [appTogglePassword]="passwordInput"></ion-icon>
       </ion-item>
 
       <!-- Login Button -->

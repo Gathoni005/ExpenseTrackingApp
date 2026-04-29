@@ -2,10 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import {  IonContent, IonHeader, IonTitle, IonToolbar, IonItem, IonInput, IonButton, IonIcon, } from '@ionic/angular/standalone';
+import {  IonContent, IonHeader, IonTitle, IonToolbar, IonItem, IonInput, IonButton, IonIcon, IonLabel } from '@ionic/angular/standalone';
 import { User } from '../../interfaces/event';
 import { addIcons } from 'ionicons';
 import { mail, lockClosed, eye, eyeOff } from 'ionicons/icons';
+import { TogglePassword } from 'src/app/directives/toggle-password';
 
 addIcons({ mail, lockClosed, eye, eyeOff });
 
@@ -14,7 +15,7 @@ addIcons({ mail, lockClosed, eye, eyeOff });
   templateUrl: './login-page.page.html',
   styleUrls: ['./login-page.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar,IonItem, IonInput, IonButton, IonIcon,CommonModule, FormsModule
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonItem, IonInput, IonButton, IonIcon,CommonModule, FormsModule, TogglePassword
   ]
 })
 export class LoginPage implements OnInit {
@@ -36,12 +37,7 @@ newUser: User = {
 
     console.log('Logging in user:', this.newUser);
 
-    // reset form
-    this.newUser = {
-      email: '',
-      password: ''
-    };
-    this.router.navigate(['/event-registration']);
+   this.router.navigate(['/event-registration']);
   }
 
   goToRegister() {

@@ -1,0 +1,68 @@
+{
+  "events": [
+    {
+      "id": "1",
+      "cost": 500,
+      "category": "Transport",
+      "description": "Uber ride",
+      "serviceProvider": "Uber",
+      "serviceProviderDetails": "App",
+      "date": "2026-04-28"
+    },
+    {
+      "cost": 800,
+      "category": "Transport",
+      "description": "nairobi to nyeri",
+      "serviceProvider": "2nk",
+      "serviceProviderDetails": "Nairobi Tearoom",
+      "date": "2026-04-29T07:35:01.888Z",
+      "id": "AWqtCJG7OGc"
+    },
+    {
+      "cost": 400,
+      "category": "Food",
+      "description": "rice and beans",
+      "serviceProvider": "safia hotel",
+      "serviceProviderDetails": "roasters",
+      "date": "2026-04-29T07:44:25.063Z",
+      "id": "zt_6EiQtTYU"
+    },
+    {
+      "cost": 2000,
+      "category": "Utilities",
+      "description": "shopping",
+      "serviceProvider": "Naivas",
+      "serviceProviderDetails": "kitengela",
+      "date": "2026-04-29T07:46:02.079Z",
+      "id": "sa5TLGX8OQU"
+    },
+    {
+      "cost": 550,
+      "category": "Entertainment",
+      "description": "movies",
+      "serviceProvider": "prestige cinema",
+      "serviceProviderDetails": "westgate mall",
+      "date": "2026-04-29T09:50:21.656Z",
+      "id": "RR7gQvGz4xo"
+    },
+    {
+      "category": "Entertainment",
+      "description": "bawling",
+      "serviceProvider": "felita bawls",
+      "serviceProviderDetails": "village market",
+      "cost": 700,
+      "date": "2026-04-29T11:26:08.329Z",
+      "id": "OW3TRtgcFhk"
+    },
+    {
+      "category": "Food",
+      "description": "rice and beef",
+      "serviceProvider": "wendos restraunt",
+      "serviceProviderDetails": "githurai",
+      "cost": 350,
+      "date": "2026-04-29T12:50:27.653Z",
+      "id": "QO7WHaIwkrE"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
