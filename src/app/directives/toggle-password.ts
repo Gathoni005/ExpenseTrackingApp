@@ -19,5 +19,4 @@ export class TogglePassword {
     this.isVisible = !this.isVisible;
     this.input.type = this.isVisible ? 'text' : 'password';
   }
-
 }
