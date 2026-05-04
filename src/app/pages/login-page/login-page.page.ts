@@ -30,17 +30,17 @@ newUser: User = {
 
 
   login() {
-    if (!this.newUser.email || !this.newUser.password) {
-      console.log('Please fill all fields');
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(this.newUser.email)) {
+      alert('Please enter a valid email address');
       return;
     }
-
-    console.log('Logging in user:', this.newUser);
-
+    console.log('Login successful with email:', this.newUser.email);
    this.router.navigate(['/event-registration']);
   }
 
   goToRegister() {
+    console.log('Navigating to registration page');
     this.router.navigate(['/registration']);
   }
 }

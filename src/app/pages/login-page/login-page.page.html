@@ -8,48 +8,51 @@
 
   <div class="login-container">
 
-    
+    <!-- Logo Section -->
     <div class="logo-section">
       <img src="assets/images/ExpenseTrackingAppLogo.jpeg" alt="App Logo">
       <h1>TrackSmart</h1>
       <p>Manage your expenses easily</p>
     </div>
 
-  
+    <!-- Form Section -->
     <div class="login-card">
 
-      <h2>Welcome </h2>
-     
+      <h2>Welcome</h2>
 
-      <!-- Email -->
-      <ion-item class="input-item">
-        <ion-icon name="mail" slot="start"></ion-icon>
-        <ion-label position="floating">Email</ion-label>
-        <ion-input type="email" placeholder="Email" [(ngModel)]="newUser.email" #email="ngModel" required email></ion-input>
-      </ion-item>
+  
+      <form #loginForm="ngForm" (ngSubmit)="login()">
 
+        <!-- Email -->
+        <ion-item class="input-item">
+          <ion-icon name="mail" slot="start"></ion-icon>
+          <ion-label position="floating">Email</ion-label>
+          <ion-input type="email" name="email" [(ngModel)]="newUser.email" #email="ngModel" required inputmode="email"></ion-input>
+        </ion-item>
+        <!-- Email error -->
+        <p *ngIf="email.invalid && email.touched" class="error-text">Email is required</p>
 
-      <!-- Password -->
-      <ion-item class="input-item">
-        <ion-icon name="lock-closed" slot="start"></ion-icon>
-        <ion-label position="floating">Password</ion-label>
-        <ion-input #passwordInput type="password" placeholder="Password" [(ngModel)]="newUser.password"></ion-input>
-        <ion-icon name="eye" slot="end" class="eye-icon" [appTogglePassword]="passwordInput"></ion-icon>
-      </ion-item>
+        <!-- Password -->
+        <ion-item class="input-item">
+          <ion-icon name="lock-closed" slot="start"></ion-icon>
+          <ion-label position="floating">Password</ion-label>
+          <ion-input name="password" #passwordInput type="password" [(ngModel)]="newUser.password" #password="ngModel" required></ion-input>
+          <ion-icon name="eye" slot="end" class="eye-icon" [appTogglePassword]="passwordInput"></ion-icon>
+        </ion-item>
 
-      <!-- Login Button -->
-      <ion-button expand="block" class="login-btn" (click)="login()">
-        Login
-      </ion-button>
+        <!-- Password error -->
+        <p *ngIf="password.invalid && password.touched" class="error-text">Password is required</p>
+
+        <!-- Login Button -->
+        <ion-button expand="block" class="login-btn" type="submit">Login</ion-button>
+
+      </form>
+      
 
       <p class="register-text">Don't have an account?</p>
 
       <!-- Register -->
-       <ion-button expand="block" fill="outline" (click)="goToRegister()">
-  Register
-</ion-button>
-      
-      
+      <ion-button expand="block" fill="outline" (click)="goToRegister()" >Register</ion-button>
 
     </div>
 

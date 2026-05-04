@@ -1,7 +1,8 @@
 export interface AppEvent {
     id?: number;
     cost: number;
-    category: string;
+    category?: string;
+    categoryId?: number;
     description: string;
     serviceProvider: string;
     serviceProviderDetails: string | number;
@@ -12,4 +13,10 @@ export interface User {
     password: string;
     confirmPassword?: string;
     name?: string;
+}
+export interface category {
+    id?: number;
+    categoryName: string;
+    categoryDescription: string;
+   
 }

@@ -1,27 +1,47 @@
 .login-container {
   display: flex;
+  flex-direction: column; /* MOBILE FIRST */
   height: 100%;
 }
 
-/* LEFT SIDE (Logo) */
+/* Logo Section */
 .logo-section {
-  flex: 1;
   background: #5b85c5;
   display: flex;
-  flex-direction: column; /* IMPORTANT */
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
+  padding: 20px;
 }
 
-/* RIGHT SIDE (Form) */
+/* Form Section */
 .login-card {
-  flex: 1;
-  padding: 30px;
+  padding: 20px;
 }
 
 /* Logo */
 .logo-section img {
-  width: 180px;
-  margin-bottom: 15px;
+  width: 120px;
+  margin-bottom: 10px;
+}
+
+/* DESKTOP VIEW */
+@media (min-width: 768px) {
+  .login-container {
+    flex-direction: row; /* side by side on larger screens */
+  }
+
+  .logo-section {
+    flex: 1;
+  }
+
+  .login-card {
+    flex: 1;
+    padding: 40px;
+  }
+
+  .logo-section img {
+    width: 180px;
+  }
 }

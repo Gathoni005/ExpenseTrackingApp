@@ -17,15 +17,34 @@
     </ion-item>
 
     <ion-item>
-      <ion-label>category</ion-label>
-      <ion-select slot= "end" interface="popover" [(ngModel)]="newEvent.category">
-        <ion-select-option value="Food">Food</ion-select-option>
-        <ion-select-option value="Transport">Transport</ion-select-option>
-        <ion-select-option value="Entertainment">Entertainment</ion-select-option>
-        <ion-select-option value="Utilities">Utilities</ion-select-option>
-        <ion-select-option value="Other">Other</ion-select-option>
+      <ion-label>Category</ion-label>
+      <ion-select [(ngModel)]="newEvent.categoryId" slot="end" interface="popover">
+        <ion-select-option *ngFor="let cat of categories" [value]="cat.id">
+          {{cat.categoryName}}
+        </ion-select-option>
       </ion-select>
     </ion-item>
+
+    <ion-button expand="block" fill="outline" (click)="showNewCategoryForm = !showNewCategoryForm" style="margin: 10px 16px;">
+      + Create New Category
+    </ion-button>
+
+    <div *ngIf="showNewCategoryForm" style="padding: 16px; background: #f5f5f5; margin: 10px 16px; border-radius: 8px;">
+      <ion-item>
+        <ion-label position="floating">Category Name</ion-label>
+        <ion-input [(ngModel)]="newCategoryName" type="text"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Description (optional)</ion-label>
+        <ion-input [(ngModel)]="newCategoryDescription" type="text"></ion-input>
+      </ion-item>
+      <ion-button expand="block" color="success" (click)="createAndUseCategory()" style="margin-top: 10px;">
+        Create & Use
+      </ion-button>
+      <ion-button expand="block" color="medium" (click)="showNewCategoryForm = false">
+        Cancel
+      </ion-button>
+    </div>
 
     <ion-item>
       <ion-label position="floating">description</ion-label>

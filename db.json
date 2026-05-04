@@ -1,94 +1,44 @@
 {
   "events": [
     {
-      "id": "1",
-      "cost": 500,
-      "category": "Transport",
-      "description": "Uber ride",
-      "serviceProvider": "Uber",
-      "serviceProviderDetails": "App",
-      "date": "2026-04-28"
-    },
-    {
-      "cost": 800,
-      "category": "Transport",
-      "description": "nairobi to nyeri",
-      "serviceProvider": "2nk",
-      "serviceProviderDetails": "Nairobi Tearoom",
-      "date": "2026-04-29T07:35:01.888Z",
-      "id": "AWqtCJG7OGc"
-    },
-    {
-      "cost": 400,
-      "category": "Food",
-      "description": "rice and beans",
-      "serviceProvider": "safia hotel",
-      "serviceProviderDetails": "roasters",
-      "date": "2026-04-29T07:44:25.063Z",
-      "id": "zt_6EiQtTYU"
-    },
-    {
-      "cost": 2000,
-      "category": "Utilities",
-      "description": "shopping",
-      "serviceProvider": "Naivas",
-      "serviceProviderDetails": "kitengela",
-      "date": "2026-04-29T07:46:02.079Z",
-      "id": "sa5TLGX8OQU"
-    },
-    {
-      "cost": 550,
-      "category": "Entertainment",
-      "description": "movies",
-      "serviceProvider": "prestige cinema",
-      "serviceProviderDetails": "westgate mall",
-      "date": "2026-04-29T09:50:21.656Z",
-      "id": "RR7gQvGz4xo"
-    },
-    {
-      "category": "Entertainment",
-      "description": "bawling",
-      "serviceProvider": "felita bawls",
-      "serviceProviderDetails": "village market",
-      "cost": 700,
-      "date": "2026-04-29T11:26:08.329Z",
-      "id": "OW3TRtgcFhk"
-    },
-    {
-      "category": "Food",
-      "description": "rice and beef",
-      "serviceProvider": "wendos restraunt",
-      "serviceProviderDetails": "githurai",
-      "cost": 350,
-      "date": "2026-04-29T12:50:27.653Z",
-      "id": "QO7WHaIwkrE"
-    },
-    {
-      "category": "Entertainment",
-      "description": "archery",
-      "serviceProvider": "webly shorts",
-      "serviceProviderDetails": "westlands",
       "cost": 100,
-      "date": "2026-04-30T05:54:36.918Z",
-      "id": "dIzdKqWUriA"
+      "category": "transport",
+      "description": "roasters to office",
+      "serviceProvider": "mark",
+      "serviceProviderDetails": "0987654321",
+      "date": "2026-05-04T12:28:06.834Z",
+      "id": "Sv_SX5B7P48"
     },
     {
-      "category": "Food",
-      "description": "fish and chips",
-      "serviceProvider": "wendos ",
-      "serviceProviderDetails": "nyeri",
-      "cost": 350,
-      "date": "2026-04-30T07:03:37.274Z",
-      "id": "lernIuk8QGU"
-    },
-    {
-      "category": "Transport",
-      "description": "office to roasters",
-      "serviceProvider": "dan",
-      "serviceProviderDetails": "0700000000",
       "cost": 70,
-      "date": "2026-04-30T07:36:47.810Z",
-      "id": "o6D26Doc9rI"
+      "category": "transport",
+      "description": "office to roasters",
+      "serviceProvider": "nic",
+      "serviceProviderDetails": "765432190",
+      "date": "2026-05-04T12:30:20.674Z",
+      "id": "LlzVR0EZwgg"
+    }
+  ],
+  "categories": [
+    {
+      "categoryName": "transport",
+      "categoryDescription": "roasters to office",
+      "id": "GNxUU_k9B-w"
+    },
+    {
+      "categoryName": "transport",
+      "categoryDescription": "office to roasters",
+      "id": "MT7MYR6BlB0"
+    },
+    {
+      "categoryName": "food",
+      "categoryDescription": "",
+      "id": "ifTauwic91g"
+    },
+    {
+      "categoryName": "food",
+      "categoryDescription": "luxury",
+      "id": "QbxqUjy_3mM"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
