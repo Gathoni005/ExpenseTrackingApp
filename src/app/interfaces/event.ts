@@ -1,12 +1,14 @@
+export type EntityId = string | number;
+
 export interface AppEvent {
-    id?: number;
+    id?: EntityId;
     cost: number;
     category?: string;
-    categoryId?: number;
+    categoryId?: EntityId;
     description: string;
     serviceProvider: string;
     serviceProviderDetails: string | number;
-    date?: Date;
+    date?: Date | string;
 }
 export interface User {
     email: string;
@@ -15,8 +17,17 @@ export interface User {
     name?: string;
 }
 export interface category {
-    id?: number;
+    id?: EntityId;
     categoryName: string;
-    categoryDescription: string;
-   
+}
+
+export interface categoryDescription {
+    id?: EntityId;
+    categoryId: EntityId;
+    description: string;
+}
+
+export interface categoryWithDescriptions {
+    category: category;
+    descriptions: categoryDescription[];
 }

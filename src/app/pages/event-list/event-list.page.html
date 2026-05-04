@@ -13,7 +13,7 @@
   </ion-header>
 
   <!-- TAB SELECTOR -->
-  <ion-segment [(ngModel)]="currentTab" color="primary" style="margin: 16px;">
+  <ion-segment [(ngModel)]="currentTab" (ionChange)="onTabChanged()" color="primary" style="margin: 16px;">
     <ion-segment-button value="events">
       <ion-label>Events</ion-label>
     </ion-segment-button>
@@ -27,46 +27,65 @@
     <div *ngFor="let group of groupedEvents | keyvalue">
       <h3 style="margin-top: 20px; margin-left: 16px; text-transform: capitalize; color: #0d47a1;">{{ group.key }}</h3>
 
-      <ion-list>
-        <ion-item *ngFor="let event of group.value">
-          <!-- NORMAL VIEW -->
-          <ion-label *ngIf="editingId !== event.id">
-            <h2>{{ event.description }}</h2>
-            <p>{{ event.serviceProvider }}</p>
-            <p>{{ event.serviceProviderDetails }}</p>
-            <p>{{ event.date | date }}</p>
-            <p><strong>Cost: </strong>{{ event.cost | currency:'KES' }}</p>
-          </ion-label>
-
-          <!-- EDIT MODE -->
-          <div *ngIf="editingId === event.id" class="edit-form">
-            <ion-input [(ngModel)]="event.category" placeholder="Category"></ion-input>
-            <ion-input [(ngModel)]="event.description" placeholder="Description"></ion-input>
-            <ion-input [(ngModel)]="event.serviceProvider" placeholder="Provider"></ion-input>
-            <ion-input [(ngModel)]="event.serviceProviderDetails" placeholder="Details"></ion-input>
-            <ion-input type="number" [(ngModel)]="event.cost" placeholder="Cost"></ion-input>
-
-            <ion-button color="success" (click)="saveUpdate(event)">Save</ion-button>
-            <ion-button color="medium" (click)="editingId = null">Cancel</ion-button>
+      <ion-accordion-group>
+        <ion-accordion *ngFor="let event of group.value" [value]="event.id ?? event.description">
+          <div slot="header" class="event-accordion-header">
+            <span class="event-header-label">Description</span>
+            <span class="event-header-value">{{ event.description || 'Event Details' }}</span>
           </div>
 
-          <!-- ACTION BUTTONS -->
-          <ion-button
-            *ngIf="editingId !== event.id"
-            color="primary"
-            slot="end"
-            (click)="startEdit(event.id!)">
-            Edit
-          </ion-button>
+          <div slot="content" class="event-accordion-content">
+            <!-- NORMAL VIEW -->
+            <div *ngIf="editingId !== event.id">
+              <div class="event-meta-row">
+                <span class="event-meta-label">Category</span>
+                <span class="event-meta-value">{{ event.category || group.key }}</span>
+              </div>
+              <div class="event-meta-row">
+                <span class="event-meta-label">Service</span>
+                <span class="event-meta-value">{{ event.serviceProvider }}</span>
+              </div>
+              <div class="event-meta-row">
+                <span class="event-meta-label">Service Details</span>
+                <span class="event-meta-value">{{ event.serviceProviderDetails }}</span>
+              </div>
+              <div class="event-meta-row">
+                <span class="event-meta-label">Cost</span>
+                <span class="event-meta-value">{{ event.cost | currency:'KES' }}</span>
+              </div>
+              <div class="event-meta-row">
+                <span class="event-meta-label">Date</span>
+                <span class="event-meta-value">{{ event.date | date }}</span>
+              </div>
+            </div>
 
-          <ion-button
-            color="danger"
-            slot="end"
-            (click)="deleteEvent(event.id!)">
-            Delete
-          </ion-button>
-        </ion-item>
-      </ion-list>
+            <!-- EDIT MODE -->
+            <div *ngIf="editingId === event.id" class="edit-form">
+              <ion-input [(ngModel)]="event.category" placeholder="Category"></ion-input>
+              <ion-input [(ngModel)]="event.description" placeholder="Description"></ion-input>
+              <ion-input [(ngModel)]="event.serviceProvider" placeholder="Provider"></ion-input>
+              <ion-input [(ngModel)]="event.serviceProviderDetails" placeholder="Details"></ion-input>
+              <ion-input type="number" [(ngModel)]="event.cost" placeholder="Cost"></ion-input>
+
+              <div class="event-actions">
+                <ion-button color="success" (click)="saveUpdate(event)">Save</ion-button>
+                <ion-button color="medium" (click)="editingId = null">Cancel</ion-button>
+              </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="event-actions" *ngIf="editingId !== event.id">
+              <ion-button size="small" fill="clear" color="primary" aria-label="Edit event" (click)="startEdit(event.id!)">
+                <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+              </ion-button>
+
+              <ion-button size="small" fill="clear" color="danger" aria-label="Delete event" (click)="deleteEvent(event.id!)">
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+        </ion-accordion>
+      </ion-accordion-group>
     </div>
   </div>
 
@@ -77,14 +96,17 @@
     <ion-list>
       <ion-item>
         <ion-label position="floating">Category Name</ion-label>
-        <ion-input [(ngModel)]="newCategory.categoryName"></ion-input>
+        <ion-input [(ngModel)]="newCategoryName"></ion-input>
       </ion-item>
 
       <ion-item>
         <ion-label position="floating">Category Description</ion-label>
-        <ion-input [(ngModel)]="newCategory.categoryDescription"></ion-input>
+        <ion-input [(ngModel)]="newCategoryDescription"></ion-input>
       </ion-item>
     </ion-list>
+    <ion-item lines="none">
+      <ion-label color="medium">Category names are unique (case-insensitive). Existing names get new descriptions instead of duplicates.</ion-label>
+    </ion-item>
 
     <ion-button expand="block" (click)="addCategory()" style="margin: 16px;">
       Add Category
@@ -92,19 +114,27 @@
 
     <!-- Category List -->
     <ion-list>
-      <ion-item *ngFor="let cat of categories">
-        <ion-label>
-          <h2>{{cat.categoryName}}</h2>
-          <p>{{cat.categoryDescription}}</p>
-        </ion-label>
+      <div *ngFor="let catGroup of categoriesWithDescriptions">
+        <ion-item>
+          <ion-label>
+            <h2 class="category-heading">{{catGroup.category.categoryName}}</h2>
+          </ion-label>
+        </ion-item>
 
-        <ion-button
-          (click)="deleteCategory(cat)"
-          slot="end"
-          color="danger">
-          Delete
-        </ion-button>
-      </ion-item>
+        <ion-item *ngFor="let desc of catGroup.descriptions" lines="inset">
+          <ion-label>{{ desc.description }}</ion-label>
+          <ion-button
+            (click)="deleteCategoryDescription(desc)"
+            slot="end"
+            color="danger">
+            Delete
+          </ion-button>
+        </ion-item>
+
+        <ion-item *ngIf="catGroup.descriptions.length === 0" lines="inset">
+          <ion-label color="medium">No descriptions yet.</ion-label>
+        </ion-item>
+      </div>
     </ion-list>
 
   </div>

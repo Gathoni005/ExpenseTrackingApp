@@ -16,14 +16,26 @@
       <ion-input type="number" min="0" [(ngModel)]="newEvent.cost"></ion-input>
     </ion-item>
 
-    <ion-item>
+    <ion-item button [detail]="false" (click)="openCategoryPicker()">
       <ion-label>Category</ion-label>
-      <ion-select [(ngModel)]="newEvent.categoryId" slot="end" interface="popover">
+      <ion-select
+        #categorySelect
+        [(ngModel)]="newEvent.categoryId"
+        slot="end"
+        interface="popover"
+        placeholder="Select category">
+        <ion-select-option [value]="''" disabled>Select category</ion-select-option>
         <ion-select-option *ngFor="let cat of categories" [value]="cat.id">
           {{cat.categoryName}}
         </ion-select-option>
       </ion-select>
     </ion-item>
+    <ion-item lines="none" *ngIf="categories.length === 0">
+      <ion-label color="medium">No categories found in the database yet. Create one below.</ion-label>
+    </ion-item>
+    <ion-button fill="clear" size="small" (click)="refreshCategories()" style="margin: 0 16px 8px;">
+      Refresh Categories
+    </ion-button>
 
     <ion-button expand="block" fill="outline" (click)="showNewCategoryForm = !showNewCategoryForm" style="margin: 10px 16px;">
       + Create New Category
@@ -35,7 +47,7 @@
         <ion-input [(ngModel)]="newCategoryName" type="text"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Description (optional)</ion-label>
+        <ion-label position="floating">Description (optional for new category)</ion-label>
         <ion-input [(ngModel)]="newCategoryDescription" type="text"></ion-input>
       </ion-item>
       <ion-button expand="block" color="success" (click)="createAndUseCategory()" style="margin-top: 10px;">

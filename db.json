@@ -1,44 +1,39 @@
 {
   "events": [
     {
-      "cost": 100,
-      "category": "transport",
-      "description": "roasters to office",
-      "serviceProvider": "mark",
-      "serviceProviderDetails": "0987654321",
-      "date": "2026-05-04T12:28:06.834Z",
-      "id": "Sv_SX5B7P48"
-    },
-    {
-      "cost": 70,
-      "category": "transport",
-      "description": "office to roasters",
-      "serviceProvider": "nic",
-      "serviceProviderDetails": "765432190",
-      "date": "2026-05-04T12:30:20.674Z",
-      "id": "LlzVR0EZwgg"
+      "categoryId": "ifTauwic91g",
+      "category": "food",
+      "cost": 90,
+      "description": "Supper tonight",
+      "serviceProvider": "Gathoni",
+      "serviceProviderDetails": "0110639676",
+      "date": "2026-05-04T20:32:46.107Z",
+      "id": "UpcdyHwqrBQ"
     }
   ],
   "categories": [
     {
       "categoryName": "transport",
-      "categoryDescription": "roasters to office",
-      "id": "GNxUU_k9B-w"
-    },
-    {
-      "categoryName": "transport",
-      "categoryDescription": "office to roasters",
       "id": "MT7MYR6BlB0"
     },
     {
       "categoryName": "food",
-      "categoryDescription": "",
       "id": "ifTauwic91g"
     },
     {
-      "categoryName": "food",
-      "categoryDescription": "luxury",
-      "id": "QbxqUjy_3mM"
+      "categoryName": "getee",
+      "id": "dWU2uxXfEvs"
+    },
+    {
+      "categoryName": "foo",
+      "id": "65lmHqTSzdM"
+    }
+  ],
+  "categoryDescriptions": [
+    {
+      "categoryId": "ifTauwic91g",
+      "description": "Supper tonight",
+      "id": "c1lQWWbKRBU"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

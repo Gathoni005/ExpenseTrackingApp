@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AppEvent } from '../interfaces/event';
+import { AppEvent, EntityId } from '../interfaces/event';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -22,12 +22,12 @@ export class EventApi {
   }
 
   // UPDATE event
-  updateEvent(id: number, event: AppEvent): Observable<AppEvent> {
+  updateEvent(id: EntityId, event: AppEvent): Observable<AppEvent> {
     return this.http.put<AppEvent>(`${this.apiUrl}/${id}`, event);
   }
   
 //delete event by id
-  deleteEvent(id: number): Observable<void> {
+  deleteEvent(id: EntityId): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }
