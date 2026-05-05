@@ -9,6 +9,16 @@
       "serviceProviderDetails": "0110639676",
       "date": "2026-05-04T20:32:46.107Z",
       "id": "UpcdyHwqrBQ"
+    },
+    {
+      "categoryId": "MT7MYR6BlB0",
+      "category": "transport",
+      "description": "jjj",
+      "serviceProvider": "njj",
+      "serviceProviderDetails": "000",
+      "cost": 999,
+      "date": "2026-05-04T21:05:34.948Z",
+      "id": "ul1StJvAfqs"
     }
   ],
   "categories": [
@@ -34,6 +44,11 @@
       "categoryId": "ifTauwic91g",
       "description": "Supper tonight",
       "id": "c1lQWWbKRBU"
+    },
+    {
+      "categoryId": "MT7MYR6BlB0",
+      "description": "jjj",
+      "id": "MgI2-wzqCIo"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

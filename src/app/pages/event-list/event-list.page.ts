@@ -1,26 +1,57 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, KeyValuePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonAccordion, IonAccordionGroup, IonContent, IonHeader, IonTitle, IonToolbar,IonList,IonItem,IonLabel, IonButton, IonInput, IonSegment, IonSegmentButton, IonIcon } from '@ionic/angular/standalone';
+import {
+  IonAccordion,
+  IonAccordionGroup,
+  IonButton,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonSegment,
+  IonSegmentButton,
+  IonTitle,
+  IonToolbar
+} from '@ionic/angular/standalone';
 import { AppEvent, category, categoryDescription, categoryWithDescriptions, EntityId } from 'src/app/interfaces/event';
 import { EventApi } from 'src/app/services/event-api';
 import { Category } from 'src/app/services/category';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { addIcons } from 'ionicons';
 import { createOutline, trashOutline } from 'ionicons/icons';
 
 addIcons({ createOutline, trashOutline });
-
 
 @Component({
   selector: 'app-event-list',
   templateUrl: './event-list.page.html',
   styleUrls: ['./event-list.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButton, IonInput, IonSegment, IonSegmentButton, IonAccordion, IonAccordionGroup, IonIcon, CommonModule, FormsModule, KeyValuePipe]
+  imports: [
+    IonContent,
+    IonHeader,
+    IonTitle,
+    IonToolbar,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonButton,
+    IonInput,
+    IonSegment,
+    IonSegmentButton,
+    IonAccordion,
+    IonAccordionGroup,
+    IonIcon,
+    CommonModule,
+    FormsModule,
+    KeyValuePipe
+  ]
 })
 export class EventListPage implements OnInit, OnDestroy {
-
   events: AppEvent[] = [];
   groupedEvents: { [key: string]: AppEvent[] } = {};
   categories: category[] = [];
@@ -29,22 +60,16 @@ export class EventListPage implements OnInit, OnDestroy {
   editingId: EntityId | null = null;
   currentTab: 'events' | 'categories' = 'events';
 
-  //for adding new category
   newCategoryName: string = '';
   newCategoryDescription: string = '';
-  private syncingEventDescriptions: boolean = false;
-  private hasLoadedEvents: boolean = false;
-  private hasLoadedCategories: boolean = false;
-  private hasLoadedCategoryDescriptions: boolean = false;
-  private syncTimerId?: ReturnType<typeof setInterval>;
 
+  private syncTimerId?: ReturnType<typeof setInterval>;
+  private isSyncingDescriptions: boolean = false;
 
   constructor(private eventApi: EventApi, private categoryService: Category) {}
 
   ngOnInit() {
-    this.loadEvents();
-    this.loadCategories();
-    this.loadCategoryDescriptions();
+    this.refreshAllData();
     this.startCategorySyncWatcher();
   }
 
@@ -57,40 +82,75 @@ export class EventListPage implements OnInit, OnDestroy {
 
   onTabChanged() {
     if (this.currentTab === 'categories') {
-      this.refreshCategoryData();
+      this.refreshAllData();
     }
   }
 
   private startCategorySyncWatcher() {
     this.syncTimerId = setInterval(() => {
       if (this.currentTab === 'categories') {
-        this.refreshCategoryData();
+        this.refreshAllData();
       }
     }, 4000);
   }
 
-  private refreshCategoryData() {
-    this.loadEvents();
-    this.loadCategories();
-    this.loadCategoryDescriptions();
-  }
+  private refreshAllData() {
+    this.eventApi.getEvents().subscribe({
+      next: (events) => {
+        this.events = events;
 
-  // Load events
-  loadEvents() {
-    this.eventApi.getEvents().subscribe(data => {
-      this.events = data;
-      this.hasLoadedEvents = true;
-      this.groupEventsByCategory();
-      this.syncDescriptionsFromEvents();
+        this.categoryService.getCategories().subscribe({
+          next: (categories) => {
+            this.categories = this.removeDuplicateCategories(categories);
+
+            this.categoryService.getCategoryDescriptions().subscribe({
+              next: (descriptions) => {
+                this.categoryDescriptions = descriptions;
+                this.groupEventsByCategory();
+                this.buildCategoriesWithDescriptions();
+                this.syncDescriptionsFromEvents();
+              },
+              error: (error) => {
+                console.error('Failed to load category descriptions:', error);
+              }
+            });
+          },
+          error: (error) => {
+            console.error('Failed to load categories:', error);
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Failed to load events:', error);
+      }
     });
   }
 
-  groupEventsByCategory() {
+  private removeDuplicateCategories(inputCategories: category[]): category[] {
+    const uniqueCategories: category[] = [];
+
+    for (const currentCategory of inputCategories) {
+      const alreadyExists = uniqueCategories.find(
+        (existingCategory) =>
+          this.categoryService.normalizeCategoryName(existingCategory.categoryName) ===
+          this.categoryService.normalizeCategoryName(currentCategory.categoryName)
+      );
+
+      if (!alreadyExists) {
+        uniqueCategories.push(currentCategory);
+      }
+    }
+
+    return uniqueCategories;
+  }
+
+  private groupEventsByCategory() {
     this.groupedEvents = this.events.reduce((grouped, event) => {
       const matchedCategory = this.categories.find(
-        c => c.id != null && event.categoryId != null && String(c.id) === String(event.categoryId)
+        (cat) => cat.id != null && event.categoryId != null && String(cat.id) === String(event.categoryId)
       );
       const categoryName = matchedCategory?.categoryName || event.category || 'Other';
+
       if (!grouped[categoryName]) {
         grouped[categoryName] = [];
       }
@@ -99,78 +159,7 @@ export class EventListPage implements OnInit, OnDestroy {
     }, {} as { [key: string]: AppEvent[] });
   }
 
-  // Delete event
-  deleteEvent(id: EntityId) {
-    const shouldDelete = confirm('Are you sure you want to delete this event?');
-    if (!shouldDelete) {
-      return;
-    }
-
-    this.eventApi.deleteEvent(id).subscribe({
-      next: () => {
-        this.loadEvents();
-        alert('Event deleted successfully.');
-      },
-      error: (error) => {
-        console.error('Failed to delete event:', error);
-        alert('Failed to delete event.');
-      }
-    });
-  }
-
-    // Enable edit mode
-  startEdit(id: EntityId) {
-    const shouldEdit = confirm('Do you want to edit this event?');
-    if (!shouldEdit) {
-      return;
-    }
-    this.editingId = id;
-  }
-
- // Save update
-  saveUpdate(event: AppEvent) {
-    if (event.id == null) {
-      console.error('Cannot update event without an id.');
-      return;
-    }
-    this.eventApi.updateEvent(event.id!, event).subscribe({
-      next: () => {
-        this.editingId = null;
-        this.loadEvents();
-        alert('Event updated successfully.');
-      },
-      error: (error) => {
-        console.error('Failed to update event:', error);
-        alert('Failed to update event.');
-      }
-    });
-  }
-
-  // ===== CATEGORIES CRUD ===== //
-  loadCategories() {
-    this.categoryService.getCategories().subscribe(data => {
-      this.categories = data.filter((cat, index, allCategories) =>
-        index === allCategories.findIndex(
-          (other) =>
-            this.categoryService.normalizeCategoryName(other.categoryName) ===
-          this.categoryService.normalizeCategoryName(cat.categoryName)
-        )
-      );
-      this.hasLoadedCategories = true;
-      this.groupEventsByCategory();
-      this.syncDescriptionsFromEvents();
-    });
-  }
-
-  loadCategoryDescriptions() {
-    this.categoryService.getCategoryDescriptions().subscribe((descriptions) => {
-      this.categoryDescriptions = descriptions;
-      this.hasLoadedCategoryDescriptions = true;
-      this.syncDescriptionsFromEvents();
-    });
-  }
-
-  buildCategoriesWithDescriptions() {
+  private buildCategoriesWithDescriptions() {
     this.categoriesWithDescriptions = this.categories.map((cat) => ({
       category: cat,
       descriptions: this.categoryDescriptions.filter(
@@ -179,11 +168,11 @@ export class EventListPage implements OnInit, OnDestroy {
     }));
   }
 
-  private resolveEventCategoryId(event: AppEvent): EntityId | undefined {
-    const hasExistingCategoryId = this.categories.some(
+  private resolveCategoryIdFromEvent(event: AppEvent): EntityId | undefined {
+    const hasValidCategoryId = this.categories.some(
       (cat) => cat.id != null && event.categoryId != null && String(cat.id) === String(event.categoryId)
     );
-    if (hasExistingCategoryId && event.categoryId != null) {
+    if (hasValidCategoryId && event.categoryId != null) {
       return event.categoryId;
     }
 
@@ -191,92 +180,156 @@ export class EventListPage implements OnInit, OnDestroy {
       return undefined;
     }
 
-    const matchedCategory = this.categories.find(
+    const matchedByName = this.categories.find(
       (cat) =>
         this.categoryService.normalizeCategoryName(cat.categoryName) ===
         this.categoryService.normalizeCategoryName(event.category ?? '')
     );
-    return matchedCategory?.id;
+    return matchedByName?.id;
   }
 
   private syncDescriptionsFromEvents() {
-    if (!this.hasLoadedEvents || !this.hasLoadedCategories || !this.hasLoadedCategoryDescriptions || this.syncingEventDescriptions) {
-      this.buildCategoriesWithDescriptions();
+    if (this.isSyncingDescriptions) {
       return;
     }
 
-    const existingDescriptionKeys = new Set(
-      this.categoryDescriptions.map(
-        (description) =>
-          `${String(description.categoryId)}::${this.categoryService.normalizeDescription(description.description)}`
-      )
-    );
-    const eventDescriptionByKey = new Map<string, categoryDescription>();
-    const descriptionsToCreate: categoryDescription[] = [];
-    const descriptionsToDelete: categoryDescription[] = [];
-
+    const expectedDescriptions: categoryDescription[] = [];
     for (const event of this.events) {
-      const eventDescription = event.description?.trim();
-      if (!eventDescription) {
+      const trimmedDescription = event.description?.trim();
+      if (!trimmedDescription) {
         continue;
       }
 
-      const resolvedCategoryId = this.resolveEventCategoryId(event);
+      const resolvedCategoryId = this.resolveCategoryIdFromEvent(event);
       if (resolvedCategoryId == null) {
         continue;
       }
 
-      const descriptionKey = `${String(resolvedCategoryId)}::${this.categoryService.normalizeDescription(eventDescription)}`;
-      if (!eventDescriptionByKey.has(descriptionKey)) {
-        eventDescriptionByKey.set(descriptionKey, {
+      const alreadyAdded = expectedDescriptions.find(
+        (item) =>
+          String(item.categoryId) === String(resolvedCategoryId) &&
+          this.categoryService.normalizeDescription(item.description) ===
+            this.categoryService.normalizeDescription(trimmedDescription)
+      );
+
+      if (!alreadyAdded) {
+        expectedDescriptions.push({
           categoryId: resolvedCategoryId,
-          description: eventDescription
+          description: trimmedDescription
         });
       }
     }
 
-    for (const [key, description] of eventDescriptionByKey.entries()) {
-      if (!existingDescriptionKeys.has(key)) {
-        descriptionsToCreate.push(description);
+    const descriptionsToCreate: categoryDescription[] = [];
+    for (const expected of expectedDescriptions) {
+      const existsInDb = this.categoryDescriptions.find(
+        (current) =>
+          String(current.categoryId) === String(expected.categoryId) &&
+          this.categoryService.normalizeDescription(current.description) ===
+            this.categoryService.normalizeDescription(expected.description)
+      );
+      if (!existsInDb) {
+        descriptionsToCreate.push(expected);
       }
     }
 
-    const keptExistingKeys = new Set<string>();
-    for (const existingDescription of this.categoryDescriptions) {
-      const key = `${String(existingDescription.categoryId)}::${this.categoryService.normalizeDescription(existingDescription.description)}`;
-      const isExpectedFromEvents = eventDescriptionByKey.has(key);
-      const isDuplicate = keptExistingKeys.has(key);
+    const descriptionsToDelete: categoryDescription[] = [];
+    const seenKeys: string[] = [];
+    for (const current of this.categoryDescriptions) {
+      const key =
+        `${String(current.categoryId)}::` +
+        this.categoryService.normalizeDescription(current.description);
 
-      if (isExpectedFromEvents && !isDuplicate) {
-        keptExistingKeys.add(key);
+      const shouldExist = expectedDescriptions.find(
+        (expected) =>
+          String(expected.categoryId) === String(current.categoryId) &&
+          this.categoryService.normalizeDescription(expected.description) ===
+            this.categoryService.normalizeDescription(current.description)
+      );
+
+      const isDuplicate = seenKeys.includes(key);
+      if (shouldExist && !isDuplicate) {
+        seenKeys.push(key);
         continue;
       }
 
-      if (existingDescription.id != null) {
-        descriptionsToDelete.push(existingDescription);
+      if (current.id != null) {
+        descriptionsToDelete.push(current);
       }
     }
 
     if (descriptionsToCreate.length === 0 && descriptionsToDelete.length === 0) {
-      this.buildCategoriesWithDescriptions();
       return;
     }
 
-    this.syncingEventDescriptions = true;
-    const syncRequests = [
-      ...descriptionsToCreate.map((description) => this.categoryService.addCategoryDescription(description)),
-      ...descriptionsToDelete.map((description) => this.categoryService.deleteCategoryDescription(description.id!))
-    ];
+    const syncRequests: Observable<unknown>[] = [];
+    for (const item of descriptionsToCreate) {
+      syncRequests.push(this.categoryService.addCategoryDescription(item));
+    }
+    for (const item of descriptionsToDelete) {
+      if (item.id != null) {
+        syncRequests.push(this.categoryService.deleteCategoryDescription(item.id));
+      }
+    }
 
+    if (syncRequests.length === 0) {
+      return;
+    }
+
+    this.isSyncingDescriptions = true;
     forkJoin(syncRequests).subscribe({
       next: () => {
-        this.syncingEventDescriptions = false;
-        this.loadCategoryDescriptions();
+        this.isSyncingDescriptions = false;
+        this.refreshAllData();
       },
       error: (error) => {
-        this.syncingEventDescriptions = false;
+        this.isSyncingDescriptions = false;
         console.error('Failed syncing category descriptions from events:', error);
-        this.buildCategoriesWithDescriptions();
+      }
+    });
+  }
+
+  deleteEvent(id: EntityId) {
+    const shouldDelete = confirm('Are you sure you want to delete this event?');
+    if (!shouldDelete) {
+      return;
+    }
+
+    this.eventApi.deleteEvent(id).subscribe({
+      next: () => {
+        alert('Event deleted successfully.');
+        this.refreshAllData();
+      },
+      error: (error) => {
+        console.error('Failed to delete event:', error);
+        alert('Failed to delete event.');
+      }
+    });
+  }
+
+  startEdit(id: EntityId) {
+    const shouldEdit = confirm('Do you want to edit this event?');
+    if (!shouldEdit) {
+      return;
+    }
+    this.editingId = id;
+  }
+
+  saveUpdate(event: AppEvent) {
+    if (event.id == null) {
+      console.error('Cannot update event without an id.');
+      return;
+    }
+
+    this.eventApi.updateEvent(event.id, event).subscribe({
+      next: () => {
+        this.editingId = null;
+        alert('Event updated successfully.');
+        this.refreshAllData();
+      },
+      error: (error) => {
+        console.error('Failed to update event:', error);
+        alert('Failed to update event.');
       }
     });
   }
@@ -302,7 +355,7 @@ export class EventListPage implements OnInit, OnDestroy {
 
           this.categoryService.getDescriptionsForCategory(existingCategory.id).subscribe({
             next: (existingDescriptions) => {
-              const duplicateDescription = existingDescriptions.some(
+              const duplicateDescription = existingDescriptions.find(
                 (description) =>
                   this.categoryService.normalizeDescription(description.description) ===
                   this.categoryService.normalizeDescription(categoryDescription)
@@ -320,9 +373,8 @@ export class EventListPage implements OnInit, OnDestroy {
                 next: () => {
                   this.newCategoryName = '';
                   this.newCategoryDescription = '';
-                  this.loadCategoryDescriptions();
-                  this.loadCategories();
                   alert(`Category "${existingCategory.categoryName}" already existed, so your description was added to it.`);
+                  this.refreshAllData();
                 },
                 error: (error) => {
                   console.error('Failed to create category description:', error);
@@ -335,6 +387,7 @@ export class EventListPage implements OnInit, OnDestroy {
               alert('Error loading category descriptions. Check console.');
             }
           });
+
           return;
         }
 
@@ -347,15 +400,11 @@ export class EventListPage implements OnInit, OnDestroy {
               return;
             }
 
-            const finishAdd = () => {
+            if (!categoryDescription) {
               this.newCategoryName = '';
               this.newCategoryDescription = '';
-              this.loadCategoryDescriptions();
-              this.loadCategories();
-            };
-
-            if (!categoryDescription) {
-              finishAdd();
+              alert(`Category "${createdCategory.categoryName}" created.`);
+              this.refreshAllData();
               return;
             }
 
@@ -363,7 +412,12 @@ export class EventListPage implements OnInit, OnDestroy {
               categoryId: createdCategory.id,
               description: categoryDescription
             }).subscribe({
-              next: () => finishAdd(),
+              next: () => {
+                this.newCategoryName = '';
+                this.newCategoryDescription = '';
+                alert(`Category "${createdCategory.categoryName}" created.`);
+                this.refreshAllData();
+              },
               error: (error) => {
                 console.error('Failed to add initial category description:', error);
                 alert('Category was created, but adding description failed. Check console.');
@@ -388,8 +442,15 @@ export class EventListPage implements OnInit, OnDestroy {
       console.error('Cannot delete category description without id.');
       return;
     }
-    this.categoryService.deleteCategoryDescription(description.id).subscribe(() => {
-      this.loadCategoryDescriptions();
+
+    this.categoryService.deleteCategoryDescription(description.id).subscribe({
+      next: () => {
+        this.refreshAllData();
+      },
+      error: (error) => {
+        console.error('Failed to delete category description:', error);
+        alert('Failed to delete category description.');
+      }
     });
   }
 }
