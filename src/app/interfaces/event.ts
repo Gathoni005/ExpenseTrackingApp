@@ -2,6 +2,7 @@ export type EntityId = string | number;
 
 export interface AppEvent {
     id?: EntityId;
+    title?: string;
     cost: number;
     category?: string;
     categoryId?: EntityId;
@@ -25,9 +26,4 @@ export interface categoryDescription {
     id?: EntityId;
     categoryId: EntityId;
     description: string;
-}
-
-export interface categoryWithDescriptions {
-    category: category;
-    descriptions: categoryDescription[];
 }

@@ -1,30 +1,46 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule, KeyValuePipe } from '@angular/common';
+import { AsyncPipe, CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ActionSheetController, AlertController, ToastController } from '@ionic/angular';
 import {
   IonAccordion,
   IonAccordionGroup,
   IonButton,
+  IonButtons,
   IonContent,
   IonHeader,
   IonIcon,
   IonInput,
   IonItem,
   IonLabel,
-  IonList,
-  IonSegment,
-  IonSegmentButton,
+  IonMenuButton,
+  IonModal,
+  IonSearchbar,
   IonTitle,
   IonToolbar
 } from '@ionic/angular/standalone';
-import { AppEvent, category, categoryDescription, categoryWithDescriptions, EntityId } from 'src/app/interfaces/event';
-import { EventApi } from 'src/app/services/event-api';
-import { Category } from 'src/app/services/category';
-import { forkJoin, Observable } from 'rxjs';
 import { addIcons } from 'ionicons';
-import { createOutline, trashOutline } from 'ionicons/icons';
+import { addCircleOutline, createOutline, ellipsisVertical, trashOutline } from 'ionicons/icons';
+import { forkJoin } from 'rxjs';
+import { AppEvent, EntityId, category } from 'src/app/interfaces/event';
+import { Category } from 'src/app/services/category';
+import { EventApi } from 'src/app/services/event-api';
+import { MenuStateService } from 'src/app/services/menu-state.service';
 
-addIcons({ createOutline, trashOutline });
+// Register all icons used on this page (template + action sheet).
+addIcons({ addCircleOutline, createOutline, ellipsisVertical, trashOutline });
+
+type ToastColor = 'success' | 'danger';
+
+interface EventEditForm {
+  title: string;
+  category: string;
+  description: string;
+  amount: number;
+  serviceProvider: string;
+  serviceProviderDetails: string;
+}
 
 @Component({
   selector: 'app-event-list',
@@ -32,425 +48,333 @@ addIcons({ createOutline, trashOutline });
   styleUrls: ['./event-list.page.scss'],
   standalone: true,
   imports: [
-    IonContent,
     IonHeader,
-    IonTitle,
     IonToolbar,
-    IonList,
+    IonTitle,
+    IonButtons,
+    IonMenuButton,
+    IonContent,
+    IonSearchbar,
+    IonButton,
+    IonAccordionGroup,
+    IonAccordion,
+    IonIcon,
     IonItem,
     IonLabel,
-    IonButton,
+    IonModal,
     IonInput,
-    IonSegment,
-    IonSegmentButton,
-    IonAccordion,
-    IonAccordionGroup,
-    IonIcon,
     CommonModule,
     FormsModule,
-    KeyValuePipe
+    AsyncPipe
   ]
 })
-export class EventListPage implements OnInit, OnDestroy {
+export class EventListPage implements OnInit {
+  // Full data from API.
   events: AppEvent[] = [];
-  groupedEvents: { [key: string]: AppEvent[] } = {};
   categories: category[] = [];
-  categoryDescriptions: categoryDescription[] = [];
-  categoriesWithDescriptions: categoryWithDescriptions[] = [];
-  editingId: EntityId | null = null;
-  currentTab: 'events' | 'categories' = 'events';
 
-  newCategoryName: string = '';
-  newCategoryDescription: string = '';
+  // Search result list shown in UI.
+  filteredEvents: AppEvent[] = [];
+  searchText = '';
 
-  private syncTimerId?: ReturnType<typeof setInterval>;
-  private isSyncingDescriptions: boolean = false;
+  // Edit modal state.
+  isEditModalOpen = false;
+  editingEvent: AppEvent | null = null;
+  editForm: EventEditForm = this.createEmptyEditForm();
 
-  constructor(private eventApi: EventApi, private categoryService: Category) {}
+  private eventApi = inject(EventApi);
+  private categoryService = inject(Category);
+  private router = inject(Router);
+  private actionSheetController = inject(ActionSheetController);
+  private alertController = inject(AlertController);
+  private toastController = inject(ToastController);
+  private menuStateService = inject(MenuStateService);
+
+  // Lets the page hide menu button while sidebar is open.
+  menuIsOpen$ = this.menuStateService.menuOpen$;
 
   ngOnInit() {
-    this.refreshAllData();
-    this.startCategorySyncWatcher();
+    this.loadInitialData();
   }
 
-  ngOnDestroy() {
-    if (this.syncTimerId) {
-      clearInterval(this.syncTimerId);
-      this.syncTimerId = undefined;
-    }
+  ionViewWillEnter() {
+    this.loadInitialData();
   }
 
-  onTabChanged() {
-    if (this.currentTab === 'categories') {
-      this.refreshAllData();
-    }
-  }
-
-  private startCategorySyncWatcher() {
-    this.syncTimerId = setInterval(() => {
-      if (this.currentTab === 'categories') {
-        this.refreshAllData();
+  // Loads events and categories together because category names are used in event rows.
+  private loadInitialData() {
+    forkJoin({
+      events: this.eventApi.getEvents(),
+      categories: this.categoryService.getCategories()
+    }).subscribe({
+      next: ({ events, categories }) => {
+        this.events = events;
+        this.categories = categories;
+        this.applyFilter();
+      },
+      error: (error) => {
+        console.error('Failed to load event list data:', error);
       }
-    }, 4000);
+    });
   }
 
-  private refreshAllData() {
+  // Search updates list in real time as user types.
+  onSearchInput(event: CustomEvent) {
+    this.searchText = String(event.detail?.value ?? '').trim().toLowerCase();
+    this.applyFilter();
+  }
+
+  // Creates the list to display based on current search text.
+  applyFilter() {
+    if (!this.searchText) {
+      this.filteredEvents = [...this.events];
+      return;
+    }
+
+    this.filteredEvents = this.events.filter((event) => this.getSearchableText(event).includes(this.searchText));
+  }
+
+  private getSearchableText(event: AppEvent): string {
+    return [
+      event.title ?? '',
+      this.getEventCategory(event),
+      event.description ?? '',
+      String(event.cost ?? ''),
+      event.serviceProvider ?? '',
+      String(event.serviceProviderDetails ?? ''),
+      String(event.date ?? '')
+    ]
+      .join(' ')
+      .toLowerCase();
+  }
+
+  goToAddEvent() {
+    this.router.navigate(['/event-registration']);
+  }
+
+  trackByEventId(index: number, event: AppEvent) {
+    return event.id ?? index;
+  }
+
+  // Stable accordion value to prevent open/close glitches.
+  getAccordionValue(event: AppEvent): string {
+    return event.id != null ? String(event.id) : this.getEventTitle(event);
+  }
+
+  getEventCategory(event: AppEvent): string {
+    if (event.category?.trim()) {
+      return event.category;
+    }
+
+    const categoryMatch = this.categories.find(
+      (item) => item.id != null && event.categoryId != null && String(item.id) === String(event.categoryId)
+    );
+
+    return categoryMatch?.categoryName ?? 'N/A';
+  }
+
+  getEventTitle(event: AppEvent): string {
+    return event.title?.trim() || event.description?.trim() || 'Event';
+  }
+
+
+
+  // Opens the 3-dot menu for one event row.
+  async openEventActions(eventData: AppEvent, clickEvent: Event) {
+    clickEvent.stopPropagation();
+    clickEvent.preventDefault();
+
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Event Options',
+      buttons: [
+        {
+          text: 'Edit',
+          icon: 'create-outline',
+          handler: () => this.openEditModal(eventData)
+        },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          icon: 'trash-outline',
+          handler: () => this.confirmDelete(eventData)
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        }
+      ]
+    });
+
+    await actionSheet.present();
+  }
+
+  // Fills edit form with current event values.
+  openEditModal(eventData: AppEvent) {
+    this.editingEvent = eventData;
+    this.editForm = {
+      title: eventData.title ?? '',
+      category: this.getEventCategory(eventData),
+      description: eventData.description ?? '',
+      amount: Number(eventData.cost ?? 0),
+      serviceProvider: eventData.serviceProvider ?? '',
+      serviceProviderDetails: String(eventData.serviceProviderDetails ?? '')
+    };
+    this.isEditModalOpen = true;
+  }
+
+  closeEditModal() {
+    this.isEditModalOpen = false;
+    this.editingEvent = null;
+    this.editForm = this.createEmptyEditForm();
+  }
+
+  async confirmCancelEdit() {
+    const alert = await this.alertController.create({
+      header: 'Discard changes?',
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        {
+          text: 'Yes',
+          role: 'destructive',
+          handler: () => this.closeEditModal()
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async confirmSaveEdit() {
+    const alert = await this.alertController.create({
+      header: 'Save Changes',
+      message: 'Do you want to save these changes?',
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        {
+          text: 'Yes',
+          handler: () => this.saveEditedEvent()
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  // Saves edit, updates the list instantly, then refreshes from server.
+  private saveEditedEvent() {
+    const eventId = this.editingEvent?.id;
+    if (eventId == null) {
+      return;
+    }
+
+    const updatedEvent: AppEvent = {
+      ...this.editingEvent,
+      title: this.editForm.title.trim(),
+      category: this.editForm.category.trim(),
+      description: this.editForm.description.trim(),
+      cost: Number(this.editForm.amount) || 0,
+      serviceProvider: this.editForm.serviceProvider.trim(),
+      serviceProviderDetails: this.editForm.serviceProviderDetails.trim()
+    };
+
+    this.eventApi.updateEvent(eventId, updatedEvent).subscribe({
+      next: async () => {
+        this.updateEventInMemory(updatedEvent);
+        this.closeEditModal();
+        await this.showToast('Event edited successfully.', 'success');
+        this.refreshEventsFromServer();
+      },
+      error: async (error) => {
+        console.error('Failed to update event:', error);
+        await this.showToast('Event edit failed.', 'danger');
+      }
+    });
+  }
+
+  async confirmDelete(eventData: AppEvent) {
+    const alert = await this.alertController.create({
+      header: 'Confirm Delete',
+      message: 'Are you sure you want to delete this event?',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: () => this.deleteEvent(eventData.id)
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  // Deletes event, removes it instantly from UI, then refreshes from server.
+  private deleteEvent(eventId: EntityId | undefined) {
+    if (eventId == null) {
+      return;
+    }
+
+    this.eventApi.deleteEvent(eventId).subscribe({
+      next: async () => {
+        this.removeEventFromMemory(eventId);
+        await this.showToast('Event deleted successfully.', 'success');
+        this.refreshEventsFromServer();
+      },
+      error: async (error) => {
+        console.error('Failed to delete event:', error);
+        await this.showToast('Event delete failed.', 'danger');
+      }
+    });
+  }
+
+  private updateEventInMemory(updatedEvent: AppEvent) {
+    this.events = this.events.map((event) => {
+      if (event.id == null || updatedEvent.id == null) {
+        return event;
+      }
+      return String(event.id) === String(updatedEvent.id) ? { ...event, ...updatedEvent } : event;
+    });
+    this.applyFilter();
+  }
+
+  private removeEventFromMemory(eventId: EntityId) {
+    this.events = this.events.filter((event) => {
+      if (event.id == null) {
+        return true;
+      }
+      return String(event.id) !== String(eventId);
+    });
+    this.applyFilter();
+  }
+
+  // Server refresh keeps local list and db.json fully synchronized.
+  private refreshEventsFromServer() {
     this.eventApi.getEvents().subscribe({
       next: (events) => {
         this.events = events;
-
-        this.categoryService.getCategories().subscribe({
-          next: (categories) => {
-            this.categories = this.removeDuplicateCategories(categories);
-
-            this.categoryService.getCategoryDescriptions().subscribe({
-              next: (descriptions) => {
-                this.categoryDescriptions = descriptions;
-                this.groupEventsByCategory();
-                this.buildCategoriesWithDescriptions();
-                this.syncDescriptionsFromEvents();
-              },
-              error: (error) => {
-                console.error('Failed to load category descriptions:', error);
-              }
-            });
-          },
-          error: (error) => {
-            console.error('Failed to load categories:', error);
-          }
-        });
+        this.applyFilter();
       },
       error: (error) => {
-        console.error('Failed to load events:', error);
+        console.error('Failed to refresh events:', error);
       }
     });
   }
 
-  private removeDuplicateCategories(inputCategories: category[]): category[] {
-    const uniqueCategories: category[] = [];
-
-    for (const currentCategory of inputCategories) {
-      const alreadyExists = uniqueCategories.find(
-        (existingCategory) =>
-          this.categoryService.normalizeCategoryName(existingCategory.categoryName) ===
-          this.categoryService.normalizeCategoryName(currentCategory.categoryName)
-      );
-
-      if (!alreadyExists) {
-        uniqueCategories.push(currentCategory);
-      }
-    }
-
-    return uniqueCategories;
+  private createEmptyEditForm(): EventEditForm {
+    return {
+      title: '',
+      category: '',
+      description: '',
+      amount: 0,
+      serviceProvider: '',
+      serviceProviderDetails: ''
+    };
   }
 
-  private groupEventsByCategory() {
-    this.groupedEvents = this.events.reduce((grouped, event) => {
-      const matchedCategory = this.categories.find(
-        (cat) => cat.id != null && event.categoryId != null && String(cat.id) === String(event.categoryId)
-      );
-      const categoryName = matchedCategory?.categoryName || event.category || 'Other';
-
-      if (!grouped[categoryName]) {
-        grouped[categoryName] = [];
-      }
-      grouped[categoryName].push(event);
-      return grouped;
-    }, {} as { [key: string]: AppEvent[] });
-  }
-
-  private buildCategoriesWithDescriptions() {
-    this.categoriesWithDescriptions = this.categories.map((cat) => ({
-      category: cat,
-      descriptions: this.categoryDescriptions.filter(
-        (description) => String(description.categoryId) === String(cat.id)
-      )
-    }));
-  }
-
-  private resolveCategoryIdFromEvent(event: AppEvent): EntityId | undefined {
-    const hasValidCategoryId = this.categories.some(
-      (cat) => cat.id != null && event.categoryId != null && String(cat.id) === String(event.categoryId)
-    );
-    if (hasValidCategoryId && event.categoryId != null) {
-      return event.categoryId;
-    }
-
-    if (!event.category) {
-      return undefined;
-    }
-
-    const matchedByName = this.categories.find(
-      (cat) =>
-        this.categoryService.normalizeCategoryName(cat.categoryName) ===
-        this.categoryService.normalizeCategoryName(event.category ?? '')
-    );
-    return matchedByName?.id;
-  }
-
-  private syncDescriptionsFromEvents() {
-    if (this.isSyncingDescriptions) {
-      return;
-    }
-
-    const expectedDescriptions: categoryDescription[] = [];
-    for (const event of this.events) {
-      const trimmedDescription = event.description?.trim();
-      if (!trimmedDescription) {
-        continue;
-      }
-
-      const resolvedCategoryId = this.resolveCategoryIdFromEvent(event);
-      if (resolvedCategoryId == null) {
-        continue;
-      }
-
-      const alreadyAdded = expectedDescriptions.find(
-        (item) =>
-          String(item.categoryId) === String(resolvedCategoryId) &&
-          this.categoryService.normalizeDescription(item.description) ===
-            this.categoryService.normalizeDescription(trimmedDescription)
-      );
-
-      if (!alreadyAdded) {
-        expectedDescriptions.push({
-          categoryId: resolvedCategoryId,
-          description: trimmedDescription
-        });
-      }
-    }
-
-    const descriptionsToCreate: categoryDescription[] = [];
-    for (const expected of expectedDescriptions) {
-      const existsInDb = this.categoryDescriptions.find(
-        (current) =>
-          String(current.categoryId) === String(expected.categoryId) &&
-          this.categoryService.normalizeDescription(current.description) ===
-            this.categoryService.normalizeDescription(expected.description)
-      );
-      if (!existsInDb) {
-        descriptionsToCreate.push(expected);
-      }
-    }
-
-    const descriptionsToDelete: categoryDescription[] = [];
-    const seenKeys: string[] = [];
-    for (const current of this.categoryDescriptions) {
-      const key =
-        `${String(current.categoryId)}::` +
-        this.categoryService.normalizeDescription(current.description);
-
-      const shouldExist = expectedDescriptions.find(
-        (expected) =>
-          String(expected.categoryId) === String(current.categoryId) &&
-          this.categoryService.normalizeDescription(expected.description) ===
-            this.categoryService.normalizeDescription(current.description)
-      );
-
-      const isDuplicate = seenKeys.includes(key);
-      if (shouldExist && !isDuplicate) {
-        seenKeys.push(key);
-        continue;
-      }
-
-      if (current.id != null) {
-        descriptionsToDelete.push(current);
-      }
-    }
-
-    if (descriptionsToCreate.length === 0 && descriptionsToDelete.length === 0) {
-      return;
-    }
-
-    const syncRequests: Observable<unknown>[] = [];
-    for (const item of descriptionsToCreate) {
-      syncRequests.push(this.categoryService.addCategoryDescription(item));
-    }
-    for (const item of descriptionsToDelete) {
-      if (item.id != null) {
-        syncRequests.push(this.categoryService.deleteCategoryDescription(item.id));
-      }
-    }
-
-    if (syncRequests.length === 0) {
-      return;
-    }
-
-    this.isSyncingDescriptions = true;
-    forkJoin(syncRequests).subscribe({
-      next: () => {
-        this.isSyncingDescriptions = false;
-        this.refreshAllData();
-      },
-      error: (error) => {
-        this.isSyncingDescriptions = false;
-        console.error('Failed syncing category descriptions from events:', error);
-      }
+  private async showToast(message: string, color: ToastColor) {
+    const toast = await this.toastController.create({
+      message,
+      color,
+      duration: 1800,
+      position: 'top'
     });
-  }
-
-  deleteEvent(id: EntityId) {
-    const shouldDelete = confirm('Are you sure you want to delete this event?');
-    if (!shouldDelete) {
-      return;
-    }
-
-    this.eventApi.deleteEvent(id).subscribe({
-      next: () => {
-        alert('Event deleted successfully.');
-        this.refreshAllData();
-      },
-      error: (error) => {
-        console.error('Failed to delete event:', error);
-        alert('Failed to delete event.');
-      }
-    });
-  }
-
-  startEdit(id: EntityId) {
-    const shouldEdit = confirm('Do you want to edit this event?');
-    if (!shouldEdit) {
-      return;
-    }
-    this.editingId = id;
-  }
-
-  saveUpdate(event: AppEvent) {
-    if (event.id == null) {
-      console.error('Cannot update event without an id.');
-      return;
-    }
-
-    this.eventApi.updateEvent(event.id, event).subscribe({
-      next: () => {
-        this.editingId = null;
-        alert('Event updated successfully.');
-        this.refreshAllData();
-      },
-      error: (error) => {
-        console.error('Failed to update event:', error);
-        alert('Failed to update event.');
-      }
-    });
-  }
-
-  addCategory() {
-    const categoryName = this.newCategoryName.trim();
-    const categoryDescription = this.newCategoryDescription.trim();
-
-    if (!categoryName) {
-      alert('Please enter a category name.');
-      return;
-    }
-
-    this.categoryService.getCategories().subscribe({
-      next: (categories) => {
-        const existingCategory = this.categoryService.findCategoryByName(categories, categoryName);
-
-        if (existingCategory?.id != null) {
-          if (!categoryDescription) {
-            alert(`Category "${existingCategory.categoryName}" already exists. Add a different description.`);
-            return;
-          }
-
-          this.categoryService.getDescriptionsForCategory(existingCategory.id).subscribe({
-            next: (existingDescriptions) => {
-              const duplicateDescription = existingDescriptions.find(
-                (description) =>
-                  this.categoryService.normalizeDescription(description.description) ===
-                  this.categoryService.normalizeDescription(categoryDescription)
-              );
-
-              if (duplicateDescription) {
-                alert(`That description already exists under "${existingCategory.categoryName}".`);
-                return;
-              }
-
-              this.categoryService.addCategoryDescription({
-                categoryId: existingCategory.id!,
-                description: categoryDescription
-              }).subscribe({
-                next: () => {
-                  this.newCategoryName = '';
-                  this.newCategoryDescription = '';
-                  alert(`Category "${existingCategory.categoryName}" already existed, so your description was added to it.`);
-                  this.refreshAllData();
-                },
-                error: (error) => {
-                  console.error('Failed to create category description:', error);
-                  alert('Error adding description. Check console.');
-                }
-              });
-            },
-            error: (error) => {
-              console.error('Failed to load category descriptions:', error);
-              alert('Error loading category descriptions. Check console.');
-            }
-          });
-
-          return;
-        }
-
-        this.categoryService.addCategory({
-          categoryName: this.categoryService.normalizeCategoryName(categoryName)
-        }).subscribe({
-          next: (createdCategory) => {
-            if (createdCategory.id == null) {
-              alert('Category was created but no category id was returned.');
-              return;
-            }
-
-            if (!categoryDescription) {
-              this.newCategoryName = '';
-              this.newCategoryDescription = '';
-              alert(`Category "${createdCategory.categoryName}" created.`);
-              this.refreshAllData();
-              return;
-            }
-
-            this.categoryService.addCategoryDescription({
-              categoryId: createdCategory.id,
-              description: categoryDescription
-            }).subscribe({
-              next: () => {
-                this.newCategoryName = '';
-                this.newCategoryDescription = '';
-                alert(`Category "${createdCategory.categoryName}" created.`);
-                this.refreshAllData();
-              },
-              error: (error) => {
-                console.error('Failed to add initial category description:', error);
-                alert('Category was created, but adding description failed. Check console.');
-              }
-            });
-          },
-          error: (error) => {
-            console.error('Failed to create category:', error);
-            alert('Error creating category. Check console.');
-          }
-        });
-      },
-      error: (error) => {
-        console.error('Failed to load categories before create:', error);
-        alert('Error loading categories. Check console.');
-      }
-    });
-  }
-
-  deleteCategoryDescription(description: categoryDescription) {
-    if (description.id == null) {
-      console.error('Cannot delete category description without id.');
-      return;
-    }
-
-    this.categoryService.deleteCategoryDescription(description.id).subscribe({
-      next: () => {
-        this.refreshAllData();
-      },
-      error: (error) => {
-        console.error('Failed to delete category description:', error);
-        alert('Failed to delete category description.');
-      }
-    });
+    await toast.present();
   }
 }

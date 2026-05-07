@@ -1,0 +1,46 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start" *ngIf="(menuIsOpen$ | async) === false">
+      <ion-menu-button menu="main-menu"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Categories</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Categories</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Categories list with icon-only actions -->
+  <ion-list>
+    <ion-item *ngFor="let item of categories">
+      <ion-label>{{ item.categoryName }}</ion-label>
+      <div class="category-actions" slot="end">
+        <!-- Edit icon -->
+        <ion-button
+          fill="clear"
+          size="small"
+          aria-label="Update category"
+          (click)="updateCategory(item)">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <!-- Delete icon -->
+        <ion-button
+          fill="clear"
+          color="danger"
+          size="small"
+          aria-label="Delete category"
+          (click)="deleteCategory(item)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-item>
+
+    <ion-item *ngIf="categories.length === 0">
+      <ion-label color="medium">No categories found.</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

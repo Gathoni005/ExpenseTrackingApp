@@ -8,17 +8,21 @@
       "serviceProvider": "Gathoni",
       "serviceProviderDetails": "0110639676",
       "date": "2026-05-04T20:32:46.107Z",
-      "id": "UpcdyHwqrBQ"
+      "id": "UpcdyHwqrBQ",
+      "title": "",
+      "location": "erre"
     },
     {
       "categoryId": "MT7MYR6BlB0",
       "category": "transport",
-      "description": "jjj",
+      "description": "ytkk",
       "serviceProvider": "njj",
       "serviceProviderDetails": "000",
       "cost": 999,
       "date": "2026-05-04T21:05:34.948Z",
-      "id": "ul1StJvAfqs"
+      "id": "ul1StJvAfqs",
+      "title": "",
+      "location": ""
     }
   ],
   "categories": [
@@ -27,11 +31,11 @@
       "id": "MT7MYR6BlB0"
     },
     {
-      "categoryName": "food",
+      "categoryName": "foods",
       "id": "ifTauwic91g"
     },
     {
-      "categoryName": "getee",
+      "categoryName": "good",
       "id": "dWU2uxXfEvs"
     },
     {

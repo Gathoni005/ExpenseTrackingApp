@@ -1,0 +1,12 @@
+/* Slightly taller row for better touch experience */
+ion-item {
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+}
+
+/* Keeps update/delete icons aligned and easy to tap */
+.category-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}

@@ -1,13 +1,15 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-  {
-    path: 'home',
-    loadComponent: () => import('./pages/login-page/login-page.page').then((m) => m.LoginPage),
-  },
+  // Default app entry now goes directly to login page.
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'login-page',
+    pathMatch: 'full',
+  },
+  {
+    path: 'home',
+    redirectTo: 'login-page',
     pathMatch: 'full',
   },
   {
@@ -25,5 +27,9 @@ export const routes: Routes = [
   {
     path: 'event-list',
     loadComponent: () => import('./pages/event-list/event-list.page').then( m => m.EventListPage)
+  },
+  {
+    path: 'categories',
+    loadComponent: () => import('./pages/categories/categories.page').then( m => m.CategoriesPage)
   },
 ];

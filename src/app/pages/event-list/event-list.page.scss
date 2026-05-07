@@ -1,70 +1,91 @@
-.category-heading {
-  color: #0d47a1;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-
-.event-accordion-header {
+/* Search row: searchbar on left, add icon on right */
+.events-toolbar-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 10px;
+  padding: 10px 12px 0;
 }
 
-.event-header-value {
+/* Keep search width similar to requested 70-80% range */
+.events-search {
+  flex: 1 1 78%;
+  max-width: 78%;
+}
+
+/* Add icon button next to searchbar */
+.add-event-icon-button {
+  margin: 0;
+  --padding-start: 4px;
+  --padding-end: 4px;
+  font-size: 28px;
+}
+
+/* Accordion spacing */
+.events-accordion-group {
+  margin: 8px 12px 16px;
+}
+
+/* Native Ionic accordion header item */
+.accordion-header-item {
+  --padding-start: 12px;
+  --inner-padding-end: 8px;
+  --min-height: 52px;
+  --background: var(--ion-item-background, transparent);
+}
+
+.accordion-title {
   font-weight: 600;
-  text-align: right;
-  margin-left: auto;
 }
 
-.event-header-label {
-  color: var(--ion-color-medium);
-  text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 0.4px;
+/* 3-dot action icon in accordion header */
+.ellipsis-button {
+  margin-inline-end: 8px;
 }
 
-.event-accordion-content {
-  padding: 10px 16px 14px;
+/* Expanded accordion body */
+.accordion-content {
+  padding: 10px 12px 12px;
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.event-meta-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 7px 0;
+/* Table layout lets the longest value decide one shared right-side column width */
+.detail-row {
+  display: table-row;
+}
+
+.detail-label,
+.detail-value {
+  display: table-cell;
+  vertical-align: top;
+  padding: 8px 0;
   border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
 }
 
-.event-meta-row:last-child {
-  border-bottom: 0;
+.detail-row:last-child .detail-label,
+.detail-row:last-child .detail-value {
+  border-bottom: none;
 }
 
-.event-meta-value {
-  font-weight: 500;
-  text-align: right;
-  margin-left: auto;
-}
-
-.event-meta-label {
+.detail-label {
   color: var(--ion-color-medium);
-  text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 0.4px;
+  width: 100%;
+  padding-right: 12px;
 }
 
-.event-actions {
+/* Value column is pinned to the far right; longest value sets start point for all */
+.detail-value {
+  padding-left: 12px;
+  text-align: left;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Save/cancel row in edit modal */
+.modal-buttons {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.edit-form {
-  display: grid;
-  gap: 8px;
+  gap: 10px;
+  margin-top: 14px;
 }

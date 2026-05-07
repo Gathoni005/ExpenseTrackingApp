@@ -1,3 +1,34 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <!-- Global sidebar used by Events and Categories pages -->
+  <ion-menu
+    menuId="main-menu"
+    contentId="main-content"
+    type="overlay"
+    (ionDidOpen)="onMenuDidOpen()"
+    (ionDidClose)="onMenuDidClose()">
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Manage</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <ion-list>
+        <!-- Auto-hide closes the menu immediately when an item is selected -->
+        <ion-menu-toggle auto-hide="true">
+          <ion-item button (click)="goTo('/event-list')">
+            <ion-label>Events</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+        <ion-menu-toggle auto-hide="true">
+          <ion-item button (click)="goTo('/categories')">
+            <ion-label>Categories</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+      </ion-list>
+    </ion-content>
+  </ion-menu>
+
+  <!-- Main outlet linked to menu via contentId -->
+  <ion-router-outlet id="main-content"></ion-router-outlet>
 </ion-app>
