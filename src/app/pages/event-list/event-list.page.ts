@@ -34,7 +34,6 @@ addIcons({ addCircleOutline, createOutline, ellipsisVertical, trashOutline });
 type ToastColor = 'success' | 'danger';
 
 interface EventEditForm {
-  title: string;
   category: string;
   description: string;
   amount: number;
@@ -136,7 +135,7 @@ export class EventListPage implements OnInit {
 
   private getSearchableText(event: AppEvent): string {
     return [
-      event.title ?? '',
+      
       this.getEventCategory(event),
       event.description ?? '',
       String(event.cost ?? ''),
@@ -157,9 +156,9 @@ export class EventListPage implements OnInit {
   }
 
   // Stable accordion value to prevent open/close glitches.
-  getAccordionValue(event: AppEvent): string {
-    return event.id != null ? String(event.id) : this.getEventTitle(event);
-  }
+ // getAccordionValue(event: AppEvent): string {
+  //  return event.id != null ? String(event.id) : this.getEventTitle(event);
+  //}
 
   getEventCategory(event: AppEvent): string {
     if (event.category?.trim()) {
@@ -172,11 +171,6 @@ export class EventListPage implements OnInit {
 
     return categoryMatch?.categoryName ?? 'N/A';
   }
-
-  getEventTitle(event: AppEvent): string {
-    return event.title?.trim() || event.description?.trim() || 'Event';
-  }
-
 
 
   // Opens the 3-dot menu for one event row.
@@ -212,7 +206,6 @@ export class EventListPage implements OnInit {
   openEditModal(eventData: AppEvent) {
     this.editingEvent = eventData;
     this.editForm = {
-      title: eventData.title ?? '',
       category: this.getEventCategory(eventData),
       description: eventData.description ?? '',
       amount: Number(eventData.cost ?? 0),
@@ -267,7 +260,6 @@ export class EventListPage implements OnInit {
 
     const updatedEvent: AppEvent = {
       ...this.editingEvent,
-      title: this.editForm.title.trim(),
       category: this.editForm.category.trim(),
       description: this.editForm.description.trim(),
       cost: Number(this.editForm.amount) || 0,
@@ -359,7 +351,6 @@ export class EventListPage implements OnInit {
 
   private createEmptyEditForm(): EventEditForm {
     return {
-      title: '',
       category: '',
       description: '',
       amount: 0,

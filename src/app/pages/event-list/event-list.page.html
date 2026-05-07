@@ -35,9 +35,9 @@
   <ion-accordion-group [multiple]="true" class="events-accordion-group">
     <ion-accordion
       *ngFor="let event of filteredEvents; trackBy: trackByEventId"
-      [value]="getAccordionValue(event)">
+      [value]="event.id?.toString()">
       <ion-item slot="header" class="accordion-header-item" lines="full">
-        <ion-label class="accordion-title">{{ getEventTitle(event) }}</ion-label>
+        <ion-label class="accordion-title">{{ event.description }}</ion-label>
         <!-- 3-dot menu for edit/delete actions -->
         <ion-button
           slot="end"
@@ -64,6 +64,7 @@
           <span class="detail-label">Amount</span>
           <span class="detail-value">{{ event.cost | currency:'KES' }}</span>
         </div>
+        
         <div class="detail-row">
           <span class="detail-label">Service</span>
           <span class="detail-value">{{ event.serviceProvider || 'N/A' }}</span>
@@ -90,10 +91,7 @@
       </ion-header>
 
       <ion-content class="ion-padding">
-        <ion-item>
-          <ion-label position="stacked">Title</ion-label>
-          <ion-input [(ngModel)]="editForm.title"></ion-input>
-        </ion-item>
+        
 
         <ion-item>
           <ion-label position="stacked">Category</ion-label>
@@ -109,6 +107,8 @@
           <ion-label position="stacked">Amount</ion-label>
           <ion-input type="number" [(ngModel)]="editForm.amount"></ion-input>
         </ion-item>
+
+       
 
         <ion-item>
           <ion-label position="stacked">Service Provider</ion-label>
